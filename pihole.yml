@@ -1,6 +1,6 @@
 ---
 - name: Update Pi-hole Gravity
-  hosts: pihole_servers
+  hosts: piholes
   become: yes
   tasks:
     - name: Update Pi-hole Gravity list
