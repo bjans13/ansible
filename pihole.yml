@@ -1,0 +1,12 @@
+---
+- name: Update Pi-hole Gravity
+  hosts: pihole_servers
+  become: yes
+  tasks:
+    - name: Update Pi-hole Gravity list
+      command: pihole -g
+      register: gravity_update_output
+
+    - name: Display Pi-hole Gravity update output
+      debug:
+        var: gravity_update_output.stdout_lines
