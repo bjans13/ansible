@@ -1,5 +1,5 @@
 ---
-- hosts: servers
+- hosts: wordpressturnkey
   become: true
   tasks:
     - name: Update package cache
