@@ -1,0 +1,22 @@
+---
+- name: Update and Reboot Proxmox Servers with Ceph HA
+  hosts: proxmox_cluster
+  become: yes
+  tasks:
+    - name: Enable Ceph HA Maintenance Mode
+      command: "pvesh set /cluster/options --ha_shutdown_policy freeze"
+
+    - name: Update package lists
+      apt:
+        update_cache: yes
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+
+    - name: Reboot servers
+      reboot:
+        post_reboot_delay: 420
+
+    - name: Disable Ceph HA Maintenance Mode
+      command: "pvesh set /cluster/options --ha_shutdown_policy migrate"
