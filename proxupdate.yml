@@ -19,7 +19,7 @@
 
     - name: Reboot servers
       reboot:
-        post_reboot_delay: 300
+        post_reboot_delay: 420
 
     - name: Disable Ceph HA Maintenance Mode
       command: "pvesh set /cluster/options --ha_shutdown_policy migrate"
