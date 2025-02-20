@@ -1,9 +1,8 @@
 ---
-- name: Update and Reboot Servers
+- name: Update and Reboot Linux Servers if Required
   hosts: servers
   become: yes
   tasks:
-
     - name: Update package lists
       apt:
         update_cache: yes
@@ -12,6 +11,11 @@
     - name: Upgrade all packages
       apt:
         upgrade: dist
+      when: ansible_os_family == "Debian"
+
+    - name: Autoremove unnecessary packages
+      apt:
+        autoremove: yes
       when: ansible_os_family == "Debian"
 
     - name: Check if reboot is required
@@ -28,3 +32,11 @@
       reboot:
         post_reboot_delay: 150
       when: reboot_required.stat.exists
+
+    - name: Check if SSH is back online after reboot
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        state: started
+        delay: 30
+        timeout: 300
