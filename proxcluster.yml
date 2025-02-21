@@ -2,6 +2,7 @@
 - name: Update and Reboot Proxmox Servers with Ceph HA
   hosts: proxmox_cluster
   become: yes
+  serial: 1  # Run on one servers at a time
   tasks:
     - name: Enable Ceph HA Maintenance Mode
       command: "pvesh set /cluster/options --ha_shutdown_policy freeze"
