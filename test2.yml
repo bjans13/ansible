@@ -24,12 +24,11 @@
 
     - name: Reboot servers
       reboot:
-        post_reboot_delay: 15
       
     - name: Check if SSH is back online after reboot
       wait_for:
         host: "{{ inventory_hostname }}"
         port: 22
         state: started
-        delay: 30
+        delay: 25
         timeout: 420
