@@ -2,7 +2,7 @@
 - name: Update and Reboot Linux Servers if Required
   hosts: servers
   become: yes
-  serial: 5  # Reboot five servers at a time
+  serial: 3  # Reboot five servers at a time
   tasks:
     - name: Gather facts
       setup:
