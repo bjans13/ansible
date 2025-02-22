@@ -24,7 +24,7 @@
 
     - name: Reboot servers
       reboot:
-        post_reboot_delay: 150
+        post_reboot_delay: 15
       
     - name: Check if SSH is back online after reboot
       wait_for:
