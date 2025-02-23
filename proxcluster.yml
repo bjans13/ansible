@@ -35,4 +35,3 @@
         state: started
         delay: 30
         timeout: 300
-      check_mode: no
