@@ -33,6 +33,10 @@
           when: ansible_os_family == "Debian"
           ignore_errors: yes
 
+        - name: Debug - Show if reboot is required
+          debug:
+            msg: "Reboot required: {{ reboot_required.stat.exists | bool }}"
+
       rescue:
         - name: Log failure and continue
           debug:
@@ -52,6 +56,7 @@
             state: started
             delay: 30
             timeout: 420
+          when: reboot_required.stat.exists  # <-- Skip if reboot is not required
 
       rescue:
         - name: Log failure to reconnect and continue
