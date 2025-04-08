@@ -2,68 +2,64 @@
 - name: Update and Reboot Linux Servers if Required
   hosts: servers
   become: yes
-  serial: 1  # Run one server at a time
+  serial: 1
+
   tasks:
     - name: Gather facts
       setup:
 
     - block:
-        - name: Check disk space before update
-          command: df -h
-          register: disk_space_before
-          ignore_errors: yes
-
         - name: Update package lists (Debian)
           apt:
             update_cache: yes
           when: ansible_os_family == "Debian"
-          ignore_errors: yes
+          register: apt_update
+
+        - name: Log package list update status
+          debug:
+            msg: "Package list updated successfully on {{ inventory_hostname }}."
+          when: not apt_update.failed
 
         - name: Upgrade all packages (Debian)
           apt:
             upgrade: dist
+            force_apt_get: yes
           when: ansible_os_family == "Debian"
-          ignore_errors: yes
+          register: upgrade_output
+
+        - name: Show changed packages
+          debug:
+            var: upgrade_output.changes
+          when: upgrade_output.changed
 
         - name: Autoremove unnecessary packages (Debian)
           apt:
             autoremove: yes
           when: ansible_os_family == "Debian"
-          ignore_errors: yes
 
         - name: Check if reboot is required (Debian)
           stat:
             path: /var/run/reboot-required
           register: reboot_required
           when: ansible_os_family == "Debian"
-          ignore_errors: yes
 
-        - name: Debug - Show if reboot is required
+        - name: Debug - Reboot required status
           debug:
-            msg: "Reboot required: {{ reboot_required.stat.exists | bool }}"
+            msg: "Reboot required on {{ inventory_hostname }}: {{ reboot_required.stat.exists | default(false) }}"
 
       rescue:
-        - name: Log failure and continue
+        - name: Log failure during update tasks
           debug:
-            msg: "Node {{ inventory_hostname }} failed during update. Moving to the next node."
-      
+            msg: "Node {{ inventory_hostname }} encountered an error during updates."
+
     - block:
         - name: Reboot server if needed
-          command: /sbin/shutdown -r now "Ansible triggered reboot"
-          when: reboot_required.stat.exists
-          async: 1
-          poll: 0
-
-        - name: Wait for server to come back online
-          wait_for:
-            host: "{{ inventory_hostname }}"
-            port: 22
-            state: started
-            delay: 30
-            timeout: 420
-          when: reboot_required.stat.exists  # <-- Skip if reboot is not required
+          reboot:
+            reboot_timeout: 600
+          when: reboot_required.stat.exists | default(false)
 
       rescue:
-        - name: Log failure to reconnect and continue
+        - name: Log failure during reboot
           debug:
-            msg: "Failed to reconnect to {{ inventory_hostname }} within the timeout period. Moving to the next node."
+            msg: "Failed to reboot or reconnect to {{ inventory_hostname }} within timeout."
+
