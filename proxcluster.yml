@@ -8,6 +8,11 @@
       setup:
 
     - block:
+        - name: Check disk space before update
+          command: df -h
+          register: disk_space_before
+          ignore_errors: yes
+
         - name: Update package lists (Debian)
           apt:
             update_cache: yes
