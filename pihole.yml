@@ -2,6 +2,7 @@
 - name: Update Pi-hole Gravity
   hosts: piholes
   become: yes
+  serial: 1
   tasks:
     - name: Update Pi-hole Gravity list
       command: pihole -g
