@@ -2,7 +2,7 @@
 - name: Reboot Linux Servers
   hosts: servers
   become: yes
-  serial: 3  # Reboot three servers at a time
+  serial: 1  # Reboot three servers at a time
   tasks:
     - name: Gather facts
       setup:
