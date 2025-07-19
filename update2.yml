@@ -1,0 +1,68 @@
+---
+- name: Update and Reboot Linux Containers and VMs
+  hosts: servers
+  become: yes
+  serial: 5  # Reboot five servers at a time
+
+  tasks:
+    - name: Gather facts
+      setup:
+
+    - block:
+        - name: Update package lists (Debian/Ubuntu)
+          apt:
+            update_cache: yes
+          when: ansible_os_family == "Debian"
+          register: apt_update
+
+        - name: Log package list update status
+          debug:
+            msg: "Package list updated successfully on {{ inventory_hostname }}."
+          when: not apt_update.failed
+
+        - name: Upgrade all packages (Debian/Ubuntu)
+          apt:
+            upgrade: dist
+            force_apt_get: yes
+          when: ansible_os_family == "Debian"
+          register: upgrade_output
+
+        - name: Show changed packages
+          debug:
+            var: upgrade_output.changes
+          when: upgrade_output.changed
+
+        - name: Autoremove unnecessary packages (Debian/Ubuntu)
+          apt:
+            autoremove: yes
+          when: ansible_os_family == "Debian"
+
+        - name: Check if reboot is required (Debian/Ubuntu)
+          stat:
+            path: /var/run/reboot-required
+          register: reboot_required
+          when: ansible_os_family == "Debian"
+
+        - name: Set reboot required fact
+          set_fact:
+            reboot_required_flag: "{{ reboot_required.stat.exists | default(false) }}"
+
+        - name: Debug - Reboot required status
+          debug:
+            msg: "Reboot required on {{ inventory_hostname }}: {{ reboot_required_flag }}"
+
+      rescue:
+        - name: Log failure during updates
+          debug:
+            msg: "{{ inventory_hostname }} encountered an error during update tasks."
+
+    - block:
+        - name: Reboot server if needed
+          reboot:
+            reboot_timeout: 600
+          when: reboot_required_flag | bool
+
+      rescue:
+        - name: Log reboot/reconnect failure
+          debug:
+            msg: "Failed to reboot or reconnect to {{ inventory_hostname }} within timeout."
