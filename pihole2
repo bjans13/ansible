@@ -1,0 +1,22 @@
+---
+- name: Upgrade Pi-hole and Update Gravity
+  hosts: piholes
+  become: yes
+  serial: 1
+
+  tasks:
+    - name: Run Pi-hole software upgrade
+      command: pihole -up
+      register: pihole_upgrade_output
+
+    - name: Display Pi-hole upgrade output
+      debug:
+        var: pihole_upgrade_output.stdout_lines
+
+    - name: Update Pi-hole Gravity list
+      command: pihole -g
+      register: gravity_update_output
+
+    - name: Display Pi-hole Gravity update output
+      debug:
+        var: gravity_update_output.stdout_lines
