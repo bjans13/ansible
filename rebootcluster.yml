@@ -2,7 +2,7 @@
 - name: Cluster reboot
   hosts: proxmox_cluster
   become: yes
-  serial: 1  # Reboot three servers at a time
+  serial: 1  # Reboot one servers at a time
   tasks:
     - name: Gather facts
       setup:
